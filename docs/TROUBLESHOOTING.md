@@ -458,11 +458,23 @@ decode path, then drops the result if the retry is still punctuation-only.
 
 ### VAD filters too aggressively (rejects recordings with speech)
 
-**Symptom:** VAD rejects recordings that contain speech, showing "No speech detected" in notifications or logs.
+**Symptom:** VAD rejects recordings that contain speech, logging "No speech detected in N.Ns of audio" (`journalctl --user -u voxtype`). Nothing is typed.
 
-**Cause:** The detection threshold is too high for your microphone or environment.
+**Cause:** The detection threshold is too high for your microphone or environment. The energy backend compares each 20ms frame against a fixed level, so it depends on input gain: a microphone turned down to stop clipping can put normal speech below that level, and short phrases lose first.
 
-**Solution:** Lower the threshold. The default is 0.5. Values closer to 0.0 are more sensitive:
+**Solution:** With the Whisper engine, use the Whisper (Silero) backend, which detects speech independently of its loudness:
+
+```bash
+voxtype setup vad
+```
+
+```toml
+[vad]
+enabled = true
+backend = "auto"  # Silero for Whisper; energy for other engines
+```
+
+To keep the energy backend, lower the threshold. The default is 0.5. Values closer to 0.0 are more sensitive:
 
 ```toml
 [vad]

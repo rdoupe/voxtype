@@ -61,8 +61,18 @@ pub(crate) fn transcribe_file(config: &config::Config, path: &PathBuf) -> anyhow
         final_samples.len() as f32 / 16000.0
     );
 
-    // Run VAD if enabled
-    if let Ok(Some(vad)) = vad::create_vad(config) {
+    // Run VAD if enabled. A VAD that fails to initialize (e.g. the Silero
+    // model is not downloaded) is reported, as the daemon does, rather than
+    // silently transcribing without it.
+    let vad = match vad::create_vad(config) {
+        Ok(vad) => vad,
+        Err(e) => {
+            eprintln!("VAD warning: {}", e);
+            eprintln!("Continuing without VAD.");
+            None
+        }
+    };
+    if let Some(vad) = vad {
         match vad.detect(&final_samples) {
             Ok(result) => {
                 println!(

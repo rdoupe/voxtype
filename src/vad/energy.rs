@@ -37,7 +37,7 @@ impl EnergyVad {
     }
 
     /// Calculate RMS energy of a sample slice
-    fn calculate_rms(samples: &[f32]) -> f32 {
+    pub(super) fn calculate_rms(samples: &[f32]) -> f32 {
         if samples.is_empty() {
             return 0.0;
         }

@@ -110,7 +110,10 @@ impl VoiceActivityDetector for WhisperVad {
             has_speech,
             speech_duration_secs,
             speech_ratio,
-            rms_energy: 0.0, // Not available from Whisper VAD
+            // Silero does not measure level, but a rejection log that reads
+            // rms=0.0000 looks like a dead microphone. Report the real level
+            // so "no signal" and "signal, but no speech" can be told apart.
+            rms_energy: super::energy::EnergyVad::calculate_rms(samples),
         })
     }
 }

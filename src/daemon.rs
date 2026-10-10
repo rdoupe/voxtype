@@ -2528,8 +2528,12 @@ impl Daemon {
                     if let Some(ref vad) = self.vad {
                         match vad.detect(&samples) {
                             Ok(result) if !result.has_speech => {
-                                tracing::debug!(
-                                    "No speech detected (speech={:.1}%, rms={:.4}), skipping transcription",
+                                // Info, not debug: this discards the whole
+                                // recording, and without audio feedback the
+                                // log is the only trace of it.
+                                tracing::info!(
+                                    "No speech detected in {:.1}s of audio (speech={:.1}%, rms={:.4}), skipping transcription",
+                                    audio_duration,
                                     result.speech_ratio * 100.0,
                                     result.rms_energy
                                 );
